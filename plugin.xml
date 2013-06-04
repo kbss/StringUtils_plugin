@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="String Utils"
+            id="SQLFormater.commands.category">
+      </category>
+      <command
+            name="Formate SQL"
+            categoryId="SQLFormater.commands.category"
+            id="SQLFormater.commands.formateSQLString">
+      </command>
+      <command
+            name="Extract SQL"
+            categoryId="SQLFormater.commands.category"
+            id="SQLFormater.commands.showStringContent">
+      </command>      
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            commandId="SQLFormater.commands.formateSQLString"
+            class="sqlformater.handlers.SrtingUtils">
+      </handler>
+       <handler
+            commandId="SQLFormater.commands.showStringContent"
+            class="sqlformater.handlers.SrtingUtils">
+      </handler>     
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="SQLFormater.commands.formateSQLString"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+8"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+       <key
+            commandId="SQLFormater.commands.showStringContent"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+9"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>     
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu
+               label="SQL Helper"
+               mnemonic="M"
+               id="SQLFormater.menus.sampleMenu">
+            <command
+                  commandId="SQLFormater.commands.formateSQLString"
+                  mnemonic="S"
+                  id="SQLFormater.menus.formateSQLString">
+            </command>
+         </menu>
+          <menu
+               label="SQL Helper"
+               mnemonic="M"
+               id="SQLFormater.menus.sampleMenu">
+            <command
+                  commandId="SQLFormater.commands.showStringContent"
+                  mnemonic="S"
+                  id="SQLFormater.commands.showStringContent">
+            </command>
+         </menu>        
+      </menuContribution>
+     
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="sqlformater.StringUtilsPreferencePage"
+            id="StringUtilsPreferencePage"
+            name="String Utils">
+      </page>
+   </extension>
+
+</plugin>
