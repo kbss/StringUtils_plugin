@@ -35,8 +35,7 @@ import sqlformater.dialog.InfoPopupDialog;
 /***************************************************************************
  * Textual utility plugin for Eclipse.
  * 
- * @see org.eclipse.core.commands.IHandler
- * @see org.eclipse.core.commands.AbstractHandler
+ * @author Serhii Krivtsov
  ***************************************************************************/
 public class SrtingUtils extends AbstractHandler {
 
@@ -90,11 +89,8 @@ public class SrtingUtils extends AbstractHandler {
     }
 
     /***************************************************************************
-     * F
-     * <p>
      * Unescapes any Java literals found in the <code>String</code> to a
-     * <code>Writer</code>.
-     * </p>
+     * <code>Writer</code>. </p>
      * 
      * <p>
      * For example, it will turn a sequence of <code>'\'</code> and
@@ -200,12 +196,11 @@ public class SrtingUtils extends AbstractHandler {
         }
     }
 
-    // /***************************************************************************
-    // * The constructor.
-    // */
-    // public SampleHandler() {
-    // }
-
+    /***************************************************************************
+     * Returns Eclipse Preference Store.
+     * 
+     * @return Eclipse Preference Store.
+     */
     private IPreferenceStore getPreferenceStore() {
         return Activator.getDefault().getPreferenceStore();
     }
@@ -407,6 +402,7 @@ public class SrtingUtils extends AbstractHandler {
         if (stringMatcher.find()) {
             Formatter sqlFormater = new BasicFormatterImpl(getPreferenceStore()
                     .getBoolean(StringUtilsPreferencePage.CLAUSE_TO_UPPERCASE));
+
             String formatedString = sqlFormater.format(stringMatcher.group());
             if (action == FORMATE_SQL_STRING_ACTION) {
                 String result = addQoutes(formatedString,
@@ -425,7 +421,14 @@ public class SrtingUtils extends AbstractHandler {
                     formatedString = formatedString
                             .replace(entry.getKey(), "?");
                 }
-                unescapeAndShow(formatedString);
+                String content;
+                if (getPreferenceStore().getBoolean(
+                        StringUtilsPreferencePage.FORMATTE_SQL_ON_EXTRACT)) {
+                    content = formatedString;
+                } else {
+                    content = stringMatcher.group();
+                }
+                unescapeAndShow(content);
             }
         }
     }
@@ -445,6 +448,7 @@ public class SrtingUtils extends AbstractHandler {
      * @see BasicFormatterImpl
      */
     private void performAction(int action) {
+
         try {
             IEditorPart part = PlatformUI.getWorkbench()
                     .getActiveWorkbenchWindow().getActivePage()
@@ -535,7 +539,7 @@ public class SrtingUtils extends AbstractHandler {
     private void unescapeAndShow(String text) {
         InfoPopupDialog infoPopup = new InfoPopupDialog(Display.getCurrent()
                 .getActiveShell(), PopupDialog.INFOPOPUP_SHELLSTYLE, true,
-                false, false, false, false, "String content",
+                false, false, false, false, SrtingUtils.class.getSimpleName(),
                 unescapeJava(text).trim().replaceAll("\\{\\_\\d.?\\_\\}", "?"));
         infoPopup.open();
     }
