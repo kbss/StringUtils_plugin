@@ -1,4 +1,23 @@
-package sqlformater.handlers;
+/*
+ * StringUtils - <a
+ * href="https://github.com/kbss/StringUtils_plugin">https://github.com/kbss/StringUtils_plugin</a><br>
+ * 
+ * Copyright (C) 2013 Serhii Krivtsov<br>
+ * 
+ * SQLPatcher is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.<br>
+ * <br>
+ * StringUtils is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>. <br>
+ * 
+ * @author Serhii Krivtsov
+ */
+package org.juke.stringutils.handlers;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -21,29 +40,35 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.editors.text.EditorsUI;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.hibernate.engine.jdbc.internal.BasicFormatterImpl;
 import org.hibernate.engine.jdbc.internal.Formatter;
-
-import sqlformater.Activator;
-import sqlformater.StringUtilsPreferencePage;
-import sqlformater.dialog.InfoPopupDialog;
+import org.juke.sqlformater.dialog.InfoPopupDialog;
+import org.juke.stringutils.Activator;
+import org.juke.stringutils.StringUtilsPreferencePage;
 
 /***************************************************************************
- * Textual utility plugin for Eclipse.
+ * String utility plug-in for Eclipse.
  * 
  * @author Serhii Krivtsov
  ***************************************************************************/
 public class SrtingUtils extends AbstractHandler {
 
-    // TODO: should be fetched from editor parameters
-    private static final int FORMATER_OFFSET = 12;
-    private static final int FORMATER_STRING_OFFSET = 16;
     private static final int FORMATE_SQL_STRING_ACTION = 1;
+
     private static final int SHOW_STRING_CONTETNT_ACTION = 0;
+
+    public SrtingUtils() {
+        getPreferenceStore().getInt(StringUtilsPreferencePage.NEXT_LINE_OFFSET);
+        getPreferenceStore().getInt(
+                StringUtilsPreferencePage.SQL_INITIAL_LINE_OFFSET);
+        getPreferenceStore().getInt(StringUtilsPreferencePage.LINE_WIDTH);
+        getPreferenceStore().getBoolean(
+                StringUtilsPreferencePage.CLAUSE_TO_UPPERCASE);
+        getPreferenceStore().getBoolean(
+                StringUtilsPreferencePage.FORMATTE_SQL_ON_EXTRACT);
+    }
 
     /***************************************************************************
      * UnEscapes java special charters.
@@ -82,10 +107,8 @@ public class SrtingUtils extends AbstractHandler {
      * @return calculated maximum line width
      */
     private int getMaximumLineWidth() {
-        return EditorsUI
-                .getPreferenceStore()
-                .getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_PRINT_MARGIN_COLUMN)
-                - FORMATER_STRING_OFFSET;
+        return getPreferenceStore()
+                .getInt(StringUtilsPreferencePage.LINE_WIDTH);
     }
 
     /***************************************************************************
@@ -206,6 +229,8 @@ public class SrtingUtils extends AbstractHandler {
     }
 
     /***************************************************************************
+     * Add quotes to given SQL query.
+     * 
      * @param sqlQuery
      * @param firstLineLenght
      * @return
@@ -215,9 +240,12 @@ public class SrtingUtils extends AbstractHandler {
         if (lines.length < 3) {
             return sqlQuery;
         }
+
+        int formaterOffset = getPreferenceStore().getInt(
+                StringUtilsPreferencePage.NEXT_LINE_OFFSET);
         StringBuilder sb = new StringBuilder();
         int maxLineLength = getMaximumLineWidth();
-        String scpaces = addSpaces("", FORMATER_OFFSET);
+        String scpaces = addSpaces("", formaterOffset);
         for (String line : lines) {
             if (line.length() > maxLineLength) {
                 maxLineLength = line.length();
@@ -231,17 +259,23 @@ public class SrtingUtils extends AbstractHandler {
             }
         }
 
-        int initialLineLength = firstLineLenght - FORMATER_OFFSET + 1;
-        String firstLine = addSpaces("",
-                maxLineLength < initialLineLength ? initialLineLength
-                        : maxLineLength - initialLineLength);
+        int initialLineLength = firstLineLenght - formaterOffset;
+        String firstLine = addSpaces(
+                "",
+                (maxLineLength < initialLineLength ? initialLineLength
+                        : maxLineLength - initialLineLength)
+                        + getPreferenceStore()
+                                .getInt(StringUtilsPreferencePage.SQL_INITIAL_LINE_OFFSET));
         return "\"" + firstLine + "\"" + sb.toString();
     }
 
     /***************************************************************************
+     * Adds number of given spaces to given string
+     * 
      * @param text
      * @param count
-     * @return
+     *            space count to add
+     * @return given string with added spaces
      */
     private String addSpaces(String text, int count) {
         return repeat(text, " ", count);
@@ -312,18 +346,18 @@ public class SrtingUtils extends AbstractHandler {
             return 0;
         }
         int lineStart = lineNum;
+        String lineString;
         try {
-            int lineLength = doc.getLineLength(lineNum);
-            int lineOffset = doc.getLineOffset(lineNum);
-            String lineString = doc.get(lineOffset, lineLength).trim();
-
-            if (match(lineString, "^(\\+|\\\")")) {
-                lineStart = findStartlineNum(doc, lineNum - 1);
-            }
+            do {
+                int lineLength = doc.getLineLength(lineStart);
+                int lineOffset = doc.getLineOffset(lineStart);
+                lineString = doc.get(lineOffset, lineLength).trim();
+                lineStart--;
+            } while (match(lineString, "^(\\+|\\\")"));
         } catch (BadLocationException e) {
             return -1;
         }
-        return lineStart;
+        return lineStart--;
     }
 
     /***************************************************************************

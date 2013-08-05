@@ -1,4 +1,23 @@
-package sqlformater.dialog;
+/*
+ * StringUtils - <a
+ * href="https://github.com/kbss/StringUtils_plugin">https://github.com/kbss/StringUtils_plugin</a><br>
+ * 
+ * Copyright (C) 2013 Serhii Krivtsov<br>
+ * 
+ * SQLPatcher is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.<br>
+ * <br>
+ * StringUtils is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>. <br>
+ * 
+ * @author Serhii Krivtsov
+ */
+package org.juke.sqlformater.dialog;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -47,11 +66,7 @@ public class InfoPopupDialog extends PopupDialog {
                 FONT_SIZE, SWT.NORMAL));
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
         Link link = new Link(composite, SWT.NO);
-
         link.setText("<a>Copy to clipboard</a>");
-        // link.setFont( new Font(getShell().getDisplay(), "Courier New", 9,
-        // SWT.UNDERLINE_LINK));
-        link.setTouchEnabled(true);
         instance.setShellStyle(HOVER_SHELLSTYLE);
         link.addMouseListener(new MouseListener() {
 
@@ -63,9 +78,9 @@ public class InfoPopupDialog extends PopupDialog {
             public void mouseDown(MouseEvent e) {
                 StringSelection stringSelection = new StringSelection(
                         informationText);
-                Clipboard clpbrd = Toolkit.getDefaultToolkit()
+                Clipboard clipboard = Toolkit.getDefaultToolkit()
                         .getSystemClipboard();
-                clpbrd.setContents(stringSelection, null);
+                clipboard.setContents(stringSelection, null);
                 instance.close();
             }
 

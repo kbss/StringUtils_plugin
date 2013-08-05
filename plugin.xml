@@ -23,11 +23,11 @@
          point="org.eclipse.ui.handlers">
       <handler
             commandId="SQLFormater.commands.formateSQLString"
-            class="sqlformater.handlers.SrtingUtils">
+            class="org.juke.stringutils.handlers.SrtingUtils">
       </handler>
        <handler
             commandId="SQLFormater.commands.showStringContent"
-            class="sqlformater.handlers.SrtingUtils">
+            class="org.juke.stringutils.handlers.SrtingUtils">
       </handler>     
    </extension>
    <extension
@@ -50,7 +50,7 @@
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu?after=additions">
          <menu
-               label="SQL Helper"
+               label="String Utils"
                mnemonic="M"
                id="SQLFormater.menus.sampleMenu">
             <command
@@ -60,7 +60,7 @@
             </command>
          </menu>
           <menu
-               label="SQL Helper"
+               label="String Utils"
                mnemonic="M"
                id="SQLFormater.menus.sampleMenu">
             <command
@@ -75,7 +75,7 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            class="sqlformater.StringUtilsPreferencePage"
+            class="org.juke.stringutils.StringUtilsPreferencePage"
             id="StringUtilsPreferencePage"
             name="String Utils">
       </page>
