@@ -44,9 +44,9 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.hibernate.engine.jdbc.internal.BasicFormatterImpl;
 import org.hibernate.engine.jdbc.internal.Formatter;
-import org.juke.sqlformater.dialog.InfoPopupDialog;
 import org.juke.stringutils.Activator;
 import org.juke.stringutils.StringUtilsPreferencePage;
+import org.juke.stringutils.dialog.InfoPopupDialog;
 
 /***************************************************************************
  * String utility plug-in for Eclipse.

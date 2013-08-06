@@ -17,7 +17,7 @@
  * 
  * @author Serhii Krivtsov
  */
-package org.juke.sqlformater.dialog;
+package org.juke.stringutils.dialog;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
