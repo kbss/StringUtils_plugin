@@ -60,29 +60,22 @@ public class SrtingUtils extends AbstractHandler {
     private static final int SHOW_STRING_CONTETNT_ACTION = 0;
 
     public SrtingUtils() {
-        getPreferenceStore().getInt(StringUtilsPreferencePage.NEXT_LINE_OFFSET);
-        getPreferenceStore().getInt(
-                StringUtilsPreferencePage.SQL_INITIAL_LINE_OFFSET);
-        getPreferenceStore().getInt(StringUtilsPreferencePage.LINE_WIDTH);
-        getPreferenceStore().getBoolean(
-                StringUtilsPreferencePage.CLAUSE_TO_UPPERCASE);
-        getPreferenceStore().getBoolean(
-                StringUtilsPreferencePage.FORMATTE_SQL_ON_EXTRACT);
+        new StringUtilsPreferencePage().init(PlatformUI.getWorkbench());
     }
 
     /***************************************************************************
      * UnEscapes java special charters.
      * 
-     * @param value
+     * @param stringValue
      * @return UnEscaped string.
      */
-    private static String unescapeJava(String value) {
+    private static String unescapeJava(String stringValue) {
         String result = null;
-        if (value != null) {
+        if (stringValue != null) {
             StringWriter writer = null;
             try {
-                writer = new StringWriter(value.length());
-                unescapeJava(writer, value);
+                writer = new StringWriter(stringValue.length());
+                unescapeJava(writer, stringValue);
                 result = writer.toString();
             } catch (IOException ioe) {
                 throw new RuntimeException(ioe);
@@ -497,8 +490,8 @@ public class SrtingUtils extends AbstractHandler {
                     proceedSelectedString(doc, textSel, action);
                 }
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -546,8 +539,8 @@ public class SrtingUtils extends AbstractHandler {
                     doc.replace(offset, length, text);
                 }
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
