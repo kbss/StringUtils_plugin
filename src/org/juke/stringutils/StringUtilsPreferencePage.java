@@ -30,9 +30,18 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  * 
  * @author Serhii Krivtsov
  ***************************************************************************/
-public class StringUtilsPreferencePage extends FieldEditorPreferencePage
-        implements IWorkbenchPreferencePage {
+public class StringUtilsPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
+    private static final String LINE_WIDTH_DEFAULT_VALUE = "64";
+    private static final String NEXT_LINE_OFFSET_DEFAULT_VALUE = "12";
+    private static final String INITIAL_OFFSET_VALUE = "2";
+    private static final String TRUE_STRING_VALUE = "true";
+    private static final String PLUGIN_TITLE = "String utility settings";
+    private static final String LINE_WIDTH_LABEL = "Line width";
+    private static final String SQL_INITIAL_LINE_OFFSET_LABEL = "SQL initial line Offset";
+    private static final String NEXT_LINE_OFFSET_LABEL = "Next line offset";
+    private static final String FORMATTE_SQL_QUERY_ON_EXTRACT = "&Formatte SQL query on extract";
+    private static final String CONVER_SQL_CLAUSES_TO_UPPER_CASE = "&Conver SQL clauses to upper case";
     public static final String CLAUSE_TO_UPPERCASE = "clauseToUppercase";
     public static final String FORMATTE_SQL_ON_EXTRACT = "formatteSqlOnExtract";
     public static final String SQL_INITIAL_LINE_OFFSET = "sqlQueryOffset";
@@ -46,31 +55,22 @@ public class StringUtilsPreferencePage extends FieldEditorPreferencePage
     }
 
     public void createFieldEditors() {
-
-        addField(new BooleanFieldEditor(CLAUSE_TO_UPPERCASE,
-                "&Conver SQL clauses to upper case", getFieldEditorParent()));
-        addField(new BooleanFieldEditor(FORMATTE_SQL_ON_EXTRACT,
-                "&Formatte SQL query on extract", getFieldEditorParent()));
-
-        addField(new StringFieldEditor(NEXT_LINE_OFFSET, "Next line offset", 3,
-                getFieldEditorParent()));
-
-        addField(new StringFieldEditor(SQL_INITIAL_LINE_OFFSET,
-                "SQL initial line Offset", 3, getFieldEditorParent()));
-
-        addField(new StringFieldEditor(LINE_WIDTH, "Line width", 3,
-                getFieldEditorParent()));
+        addField(new BooleanFieldEditor(CLAUSE_TO_UPPERCASE, CONVER_SQL_CLAUSES_TO_UPPER_CASE, getFieldEditorParent()));
+        addField(new BooleanFieldEditor(FORMATTE_SQL_ON_EXTRACT, FORMATTE_SQL_QUERY_ON_EXTRACT, getFieldEditorParent()));
+        addField(new StringFieldEditor(NEXT_LINE_OFFSET, NEXT_LINE_OFFSET_LABEL, 3, getFieldEditorParent()));
+        addField(new StringFieldEditor(SQL_INITIAL_LINE_OFFSET, SQL_INITIAL_LINE_OFFSET_LABEL, 3, getFieldEditorParent()));
+        addField(new StringFieldEditor(LINE_WIDTH, LINE_WIDTH_LABEL, 3, getFieldEditorParent()));
     }
 
     @Override
     public void init(IWorkbench workbench) {
         setPreferenceStore(Activator.getDefault().getPreferenceStore());
-        setDescription("String utility settings");
-        getPreferenceStore().setDefault(CLAUSE_TO_UPPERCASE, "true");
-        getPreferenceStore().setDefault(STRING_BORDER_OFFSET, "true");
-        getPreferenceStore().setDefault(FORMATTE_SQL_ON_EXTRACT, "true");
-        getPreferenceStore().setDefault(SQL_INITIAL_LINE_OFFSET, "2");
-        getPreferenceStore().setDefault(NEXT_LINE_OFFSET, "12");
-        getPreferenceStore().setDefault(LINE_WIDTH, "64");
+        setDescription(PLUGIN_TITLE);
+        getPreferenceStore().setDefault(CLAUSE_TO_UPPERCASE, TRUE_STRING_VALUE);
+        getPreferenceStore().setDefault(STRING_BORDER_OFFSET, TRUE_STRING_VALUE);
+        getPreferenceStore().setDefault(FORMATTE_SQL_ON_EXTRACT, TRUE_STRING_VALUE);
+        getPreferenceStore().setDefault(SQL_INITIAL_LINE_OFFSET, INITIAL_OFFSET_VALUE);
+        getPreferenceStore().setDefault(NEXT_LINE_OFFSET, NEXT_LINE_OFFSET_DEFAULT_VALUE);
+        getPreferenceStore().setDefault(LINE_WIDTH, LINE_WIDTH_DEFAULT_VALUE);
     }
 }

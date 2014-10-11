@@ -41,17 +41,15 @@ import org.eclipse.swt.widgets.Text;
  * @author Serhii Krivtsov
  ***************************************************************************/
 public class InfoPopupDialog extends PopupDialog {
+    private static final String COURIER_NEW_FONT = "Courier New";
+    private static final String POPUP_LINK = "<a>Copy to clipboard</a>";
     private String informationText;
     private int FONT_SIZE = 11;
     private InfoPopupDialog instance;
 
-    public InfoPopupDialog(Shell parent, int shellStyle,
-            boolean takeFocusOnOpen, boolean persistSize,
-            boolean persistLocation, boolean showDialogMenu,
+    public InfoPopupDialog(Shell parent, int shellStyle, boolean takeFocusOnOpen, boolean persistSize, boolean persistLocation, boolean showDialogMenu,
             boolean showPersistActions, String titleText, String infoText) {
-        super(parent, shellStyle, takeFocusOnOpen, persistSize,
-                persistLocation, showDialogMenu, showPersistActions, titleText,
-                "Content of string");
+        super(parent, shellStyle, takeFocusOnOpen, persistSize, persistLocation, showDialogMenu, showPersistActions, titleText, "Content of string");
         this.informationText = infoText;
         instance = this;
     }
@@ -59,14 +57,12 @@ public class InfoPopupDialog extends PopupDialog {
     @Override
     protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
-        Text text = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.WRAP
-                | SWT.V_SCROLL);
+        Text text = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
         text.setText(informationText);
-        text.setFont(new Font(getShell().getDisplay(), "Courier New",
-                FONT_SIZE, SWT.NORMAL));
+        text.setFont(new Font(getShell().getDisplay(), COURIER_NEW_FONT, FONT_SIZE, SWT.NORMAL));
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
         Link link = new Link(composite, SWT.NO);
-        link.setText("<a>Copy to clipboard</a>");
+        link.setText(POPUP_LINK);
         instance.setShellStyle(HOVER_SHELLSTYLE);
         link.addMouseListener(new MouseListener() {
 
@@ -76,10 +72,8 @@ public class InfoPopupDialog extends PopupDialog {
 
             @Override
             public void mouseDown(MouseEvent e) {
-                StringSelection stringSelection = new StringSelection(
-                        informationText);
-                Clipboard clipboard = Toolkit.getDefaultToolkit()
-                        .getSystemClipboard();
+                StringSelection stringSelection = new StringSelection(informationText);
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(stringSelection, null);
                 instance.close();
             }

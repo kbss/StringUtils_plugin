@@ -19,6 +19,7 @@
  */
 package org.juke.stringutils.handlers;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -53,7 +54,52 @@ import org.juke.stringutils.dialog.InfoPopupDialog;
  * 
  * @author Serhii Krivtsov
  ***************************************************************************/
+// TODO: Add REGEXP description
 public class SrtingUtils extends AbstractHandler {
+
+    private static final int INVALID_LINE_NUM = -1;
+
+    private static final int PART_COUNT = 2;
+
+    private static final String REPLACEMENT_KEY = "?";
+
+    private static final String WHITESPACE_REGEXP = "\"(\\s+|)\\+(\\s+|)\\w+.?(\\s+|)\\+(\\s+|)\\\"";
+
+    private static final String LINE_REGEXP = "\\\"(\\s+|)\\+(\\s+|)\\\"";
+
+    private static final Pattern PATTERN = Pattern.compile("(?<=\\\").*(?=\")");
+
+    private static final String UNESCAPE_REGEXP = "\\{\\_\\d.?\\_\\}";
+
+    private static final String REPLACMENT_SYMBOL = "_";
+
+    private static final String TEMPLATE_KEY = "{_%s_}";
+
+    private static final String REPLACMENT_REGEXP = "(\\\"(\\s+|)\\+(\\s+|)|(\\s+|)\\+(\\s+|)\\\")";
+
+    private static final String NEW_LINE_REGEXP = "^(\\+|\\\")";
+
+    private static final String STRING_NEW_LINE = "+ \"";
+
+    private static final String SEMICOLON = ";";
+
+    private static final String BRACE = ")";
+
+    private static final String CLOSING_BRACE = "}";
+
+    private static final String OPENING_BRACE = "{";
+
+    private static final String COMMANDS_FORMATE_SQL_STRING = "SQLFormater.commands.formateSQLString";
+
+    private static final String COMMANDS_SHOW_STRING_CONTENT = "SQLFormater.commands.showStringContent";
+
+    private static final String SINGL_SPACE = " ";
+
+    private static final String QUOTE = "\"";
+
+    private static final String EMPTY_STRING = "";
+
+    private static final String NEW_LINE = "\n";
 
     private static final int FORMATE_SQL_STRING_ACTION = 1;
 
@@ -78,18 +124,29 @@ public class SrtingUtils extends AbstractHandler {
                 unescapeJava(writer, stringValue);
                 result = writer.toString();
             } catch (IOException ioe) {
+                // TODO: Create custom exception
                 throw new RuntimeException(ioe);
             } finally {
-                if (writer != null) {
-                    try {
-                        writer.close();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                closeQuite(writer);
             }
         }
         return result;
+    }
+
+    /**
+     * Closes this stream and releases any system resources associated with it.
+     * If the stream is already closed then invoking this method has no effect.
+     * 
+     * IOException will be suppressed.
+     */
+    private static void closeQuite(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                // DO NOTHING
+            }
+        }
     }
 
     /***************************************************************************
@@ -100,10 +157,10 @@ public class SrtingUtils extends AbstractHandler {
      * @return calculated maximum line width
      */
     private int getMaximumLineWidth() {
-        return getPreferenceStore()
-                .getInt(StringUtilsPreferencePage.LINE_WIDTH);
+        return getPreferenceStore().getInt(StringUtilsPreferencePage.LINE_WIDTH);
     }
 
+    // TODO: FIXME: Use Apache StringEscapeUtils
     /***************************************************************************
      * Unescapes any Java literals found in the <code>String</code> to a
      * <code>Writer</code>. </p>
@@ -154,9 +211,7 @@ public class SrtingUtils extends AbstractHandler {
                         inUnicode = false;
                         hadSlash = false;
                     } catch (NumberFormatException nfe) {
-                        throw new RuntimeException(
-                                "Unable to parse unicode value: " + unicode,
-                                nfe);
+                        throw new RuntimeException("Unable to parse unicode value: " + unicode, nfe);
                     }
                 }
                 continue;
@@ -229,37 +284,30 @@ public class SrtingUtils extends AbstractHandler {
      * @return
      */
     private String addQoutes(String sqlQuery, int firstLineLenght) {
-        String[] lines = sqlQuery.split("\n");
+        String[] lines = sqlQuery.split(NEW_LINE);
         if (lines.length < 3) {
             return sqlQuery;
         }
 
-        int formaterOffset = getPreferenceStore().getInt(
-                StringUtilsPreferencePage.NEXT_LINE_OFFSET);
-        StringBuilder sb = new StringBuilder();
+        int formaterOffset = getPreferenceStore().getInt(StringUtilsPreferencePage.NEXT_LINE_OFFSET);
         int maxLineLength = getMaximumLineWidth();
-        String scpaces = addSpaces("", formaterOffset);
+        String scpaces = addSpaces(EMPTY_STRING, formaterOffset);
         for (String line : lines) {
             if (line.length() > maxLineLength) {
                 maxLineLength = line.length();
             }
         }
-
+        StringBuilder sb = new StringBuilder();
         for (String line : lines) {
             if (!line.trim().isEmpty()) {
-                sb.append("\n").append(scpaces).append("+ \"")
-                        .append(addSpaces(line, maxLineLength)).append("\"");
+                sb.append(NEW_LINE).append(scpaces).append(STRING_NEW_LINE).append(addSpaces(line, maxLineLength)).append(QUOTE);
             }
         }
 
         int initialLineLength = firstLineLenght - formaterOffset;
-        String firstLine = addSpaces(
-                "",
-                (maxLineLength < initialLineLength ? initialLineLength
-                        : maxLineLength - initialLineLength)
-                        + getPreferenceStore()
-                                .getInt(StringUtilsPreferencePage.SQL_INITIAL_LINE_OFFSET));
-        return "\"" + firstLine + "\"" + sb.toString();
+        String firstLine = addSpaces(EMPTY_STRING, (maxLineLength < initialLineLength ? initialLineLength : maxLineLength - initialLineLength)
+                + getPreferenceStore().getInt(StringUtilsPreferencePage.SQL_INITIAL_LINE_OFFSET));
+        return QUOTE + firstLine + QUOTE + sb.toString();
     }
 
     /***************************************************************************
@@ -271,7 +319,7 @@ public class SrtingUtils extends AbstractHandler {
      * @return given string with added spaces
      */
     private String addSpaces(String text, int count) {
-        return repeat(text, " ", count);
+        return repeat(text, SINGL_SPACE, count);
     }
 
     /***************************************************************************
@@ -279,11 +327,9 @@ public class SrtingUtils extends AbstractHandler {
      * from the application context.
      */
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        if ("SQLFormater.commands.showStringContent".equalsIgnoreCase(event
-                .getCommand().getId())) {
+        if (COMMANDS_SHOW_STRING_CONTENT.equalsIgnoreCase(event.getCommand().getId())) {
             performAction(SHOW_STRING_CONTETNT_ACTION);
-        } else if ("SQLFormater.commands.formateSQLString"
-                .equalsIgnoreCase(event.getCommand().getId())) {
+        } else if (COMMANDS_FORMATE_SQL_STRING.equalsIgnoreCase(event.getCommand().getId())) {
             performAction(FORMATE_SQL_STRING_ACTION);
         }
         return null;
@@ -298,10 +344,9 @@ public class SrtingUtils extends AbstractHandler {
      *         number.
      * @throws BadLocationException
      */
-    private int findEndlineNum(IDocument doc, int lineNum)
-            throws BadLocationException {
+    private int findEndlineNum(IDocument doc, int lineNum) throws BadLocationException {
         if (doc.getNumberOfLines() - 1 < lineNum) {
-            return -1;
+            return INVALID_LINE_NUM;
         }
         int lineLength;
         int lineOffset;
@@ -313,10 +358,9 @@ public class SrtingUtils extends AbstractHandler {
             lineOffset = doc.getLineOffset(lineEnd);
             lineString = doc.get(lineOffset, lineLength).trim();
 
-            if (lineString.endsWith("{") || lineString.endsWith(")")
-                    || lineString.endsWith("}")) {
-                return -1;
-            } else if (lineString.endsWith(";")) {
+            if (lineString.endsWith(OPENING_BRACE) || lineString.endsWith(BRACE) || lineString.endsWith(CLOSING_BRACE)) {
+                return INVALID_LINE_NUM;
+            } else if (lineString.endsWith(SEMICOLON)) {
                 isNotFound = false;
                 break;
             }
@@ -346,9 +390,9 @@ public class SrtingUtils extends AbstractHandler {
                 int lineOffset = doc.getLineOffset(lineStart);
                 lineString = doc.get(lineOffset, lineLength).trim();
                 lineStart--;
-            } while (match(lineString, "^(\\+|\\\")"));
+            } while (match(lineString, NEW_LINE_REGEXP));
         } catch (BadLocationException e) {
-            return -1;
+            return INVALID_LINE_NUM;
         }
         return lineStart--;
     }
@@ -362,11 +406,8 @@ public class SrtingUtils extends AbstractHandler {
      * @return String key for given variable.
      */
     private String getVariableKey(int id, String variableName) {
-        String template = "{_%s_}";
-        String result = variableName.replaceAll(
-                "(\\\"(\\s+|)\\+(\\s+|)|(\\s+|)\\+(\\s+|)\\\")", "");
-        result = String.format(template,
-                repeat(result, "_", String.format(template, result).length()));
+        String result = variableName.replaceAll(REPLACMENT_REGEXP, EMPTY_STRING);
+        result = String.format(TEMPLATE_KEY, repeat(result, REPLACMENT_SYMBOL, String.format(TEMPLATE_KEY, result).length()));
         return result;
     }
 
@@ -395,68 +436,61 @@ public class SrtingUtils extends AbstractHandler {
      *            The action that will be performed on selected string.
      * @throws BadLocationException
      */
-    public void proceedSelectedString(IDocument doc, TextSelection selection,
-            int action) throws BadLocationException {
+    public void proceedSelectedString(IDocument doc, TextSelection selection, int action) throws BadLocationException {
         int lineNum = selection.getStartLine();
         int lineStart = findStartlineNum(doc, lineNum);
         int lineEnd = findEndlineNum(doc, lineNum);
-        if (lineStart == -1 || lineEnd == -1 || lineStart > lineEnd) {
+        if (lineStart == INVALID_LINE_NUM || lineEnd == INVALID_LINE_NUM || lineStart > lineEnd) {
             return;
         }
         int startLineOffset = doc.getLineOffset(lineStart);
         int endLineOffset = doc.getLineOffset(lineEnd);
-        String lineString = doc.get(startLineOffset, endLineOffset
-                - startLineOffset);
-        int startOfStringOffset = startLineOffset + lineString.indexOf("\"");
-        int endOfStringLength = lineString.lastIndexOf("\"") + 1
-                - lineString.indexOf("\"");
+        String lineString = doc.get(startLineOffset, endLineOffset - startLineOffset);
+        int startOfStringOffset = startLineOffset + lineString.indexOf(QUOTE);
+        int endOfStringLength = lineString.lastIndexOf(QUOTE) + 1 - lineString.indexOf(QUOTE);
         Map<String, String> variableMap = new HashMap<String, String>();
-        lineString = lineString.replaceAll("\\\"(\\s+|)\\+(\\s+|)\\\"", "");
-        Matcher matcher = Pattern.compile(
-                "\"(\\s+|)\\+(\\s+|)\\w+.?(\\s+|)\\+(\\s+|)\\\"").matcher(
-                lineString);
+        lineString = lineString.replaceAll(LINE_REGEXP, EMPTY_STRING);
+        Matcher matcher = Pattern.compile(WHITESPACE_REGEXP).matcher(lineString);
         while (matcher.find()) {
-            String variableKey = getVariableKey(variableMap.size(),
-                    matcher.group());
-
+            String variableKey = getVariableKey(variableMap.size(), matcher.group());
             variableMap.put(variableKey, matcher.group());
-
             lineString = lineString.replace(matcher.group(), variableKey);
         }
-        Matcher stringMatcher = Pattern.compile("(?<=\\\").*(?=\")").matcher(
-                lineString);
+        Matcher stringMatcher = PATTERN.matcher(lineString);
 
         if (stringMatcher.find()) {
-            Formatter sqlFormater = new BasicFormatterImpl(getPreferenceStore()
-                    .getBoolean(StringUtilsPreferencePage.CLAUSE_TO_UPPERCASE));
+            Formatter sqlFormater = new BasicFormatterImpl(getPreferenceStore().getBoolean(StringUtilsPreferencePage.CLAUSE_TO_UPPERCASE));
 
             String formatedString = sqlFormater.format(stringMatcher.group());
             if (action == FORMATE_SQL_STRING_ACTION) {
-                String result = addQoutes(formatedString,
-                        lineString.indexOf("\""));
-                if (formatedString.split("\n").length > 2) {
-                    for (Entry<String, String> entry : variableMap.entrySet()) {
-                        result = result.replace(entry.getKey(),
-                                entry.getValue());
-                    }
-                    replaceTextInEditor(startOfStringOffset, endOfStringLength,
-                            result);
-                }
+                fornatSqkString(lineString, startOfStringOffset, endOfStringLength, variableMap, formatedString);
 
             } else if (action == SHOW_STRING_CONTETNT_ACTION) {
-                for (Entry<String, String> entry : variableMap.entrySet()) {
-                    formatedString = formatedString
-                            .replace(entry.getKey(), "?");
-                }
-                String content;
-                if (getPreferenceStore().getBoolean(
-                        StringUtilsPreferencePage.FORMATTE_SQL_ON_EXTRACT)) {
-                    content = formatedString;
-                } else {
-                    content = stringMatcher.group();
-                }
-                unescapeAndShow(content);
+                showStringContent(variableMap, stringMatcher, formatedString);
             }
+        }
+    }
+
+    private void showStringContent(Map<String, String> variableMap, Matcher stringMatcher, String formatedString) {
+        for (Entry<String, String> entry : variableMap.entrySet()) {
+            formatedString = formatedString.replace(entry.getKey(), REPLACEMENT_KEY);
+        }
+        String content;
+        if (getPreferenceStore().getBoolean(StringUtilsPreferencePage.FORMATTE_SQL_ON_EXTRACT)) {
+            content = formatedString;
+        } else {
+            content = stringMatcher.group();
+        }
+        unescapeAndShow(content);
+    }
+
+    private void fornatSqkString(String lineString, int startOfStringOffset, int endOfStringLength, Map<String, String> variableMap, String formatedString) {
+        String result = addQoutes(formatedString, lineString.indexOf(QUOTE));
+        if (formatedString.split(NEW_LINE).length > PART_COUNT) {
+            for (Entry<String, String> entry : variableMap.entrySet()) {
+                result = result.replace(entry.getKey(), entry.getValue());
+            }
+            replaceTextInEditor(startOfStringOffset, endOfStringLength, result);
         }
     }
 
@@ -477,9 +511,7 @@ public class SrtingUtils extends AbstractHandler {
     private void performAction(int action) {
 
         try {
-            IEditorPart part = PlatformUI.getWorkbench()
-                    .getActiveWorkbenchWindow().getActivePage()
-                    .getActiveEditor();
+            IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
             if (part instanceof ITextEditor) {
                 final ITextEditor editor = (ITextEditor) part;
                 IDocumentProvider prov = editor.getDocumentProvider();
@@ -527,9 +559,7 @@ public class SrtingUtils extends AbstractHandler {
      */
     private void replaceTextInEditor(int offset, int length, String text) {
         try {
-            IEditorPart part = PlatformUI.getWorkbench()
-                    .getActiveWorkbenchWindow().getActivePage()
-                    .getActiveEditor();
+            IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
             if (part instanceof ITextEditor) {
                 final ITextEditor editor = (ITextEditor) part;
                 IDocumentProvider prov = editor.getDocumentProvider();
@@ -549,8 +579,7 @@ public class SrtingUtils extends AbstractHandler {
      * @param length
      */
     public void selectText(int startOffset, int length) {
-        IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                .getActivePage().getActiveEditor();
+        IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (part instanceof ITextEditor) {
             final ITextEditor editor = (ITextEditor) part;
             editor.selectAndReveal(startOffset, length);
@@ -564,10 +593,8 @@ public class SrtingUtils extends AbstractHandler {
      *            java string.
      */
     private void unescapeAndShow(String text) {
-        InfoPopupDialog infoPopup = new InfoPopupDialog(Display.getCurrent()
-                .getActiveShell(), PopupDialog.INFOPOPUP_SHELLSTYLE, true,
-                false, false, false, false, SrtingUtils.class.getSimpleName(),
-                unescapeJava(text).trim().replaceAll("\\{\\_\\d.?\\_\\}", "?"));
+        InfoPopupDialog infoPopup = new InfoPopupDialog(Display.getCurrent().getActiveShell(), PopupDialog.INFOPOPUP_SHELLSTYLE, true, false, false, false,
+                false, SrtingUtils.class.getSimpleName(), unescapeJava(text).trim().replaceAll(UNESCAPE_REGEXP, REPLACEMENT_KEY));
         infoPopup.open();
     }
 }
