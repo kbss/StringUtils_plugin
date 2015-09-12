@@ -17,7 +17,7 @@
  * 
  * @author Serhii Krivtsov
  */
-package org.juke.stringutils;
+package org.forsp.strinhelper;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;

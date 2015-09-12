@@ -3,82 +3,45 @@
 <plugin>
 
    <extension
-         point="org.eclipse.ui.commands">
-      <category
-            name="String Utils"
-            id="SQLFormater.commands.category">
-      </category>
-      <command
-            name="Formate SQL"
-            categoryId="SQLFormater.commands.category"
-            id="SQLFormater.commands.formateSQLString">
-      </command>
-      <command
-            name="Extract SQL"
-            categoryId="SQLFormater.commands.category"
-            id="SQLFormater.commands.showStringContent">
-      </command>      
-   </extension>
-   <extension
          point="org.eclipse.ui.handlers">
       <handler
-            commandId="SQLFormater.commands.formateSQLString"
-            class="org.juke.stringutils.handlers.SrtingUtils">
+            commandId="org.forsp.StringHelper.commands.sampleCommand"
+            class="org.forsp.stringhelper.handlers.SampleHandler">
       </handler>
-       <handler
-            commandId="SQLFormater.commands.showStringContent"
-            class="org.juke.stringutils.handlers.SrtingUtils">
-      </handler>     
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
       <key
-            commandId="SQLFormater.commands.formateSQLString"
+            commandId="org.forsp.StringHelper.commands.sampleCommand"
             contextId="org.eclipse.ui.contexts.window"
-            sequence="M1+8"
+            sequence="M1+6"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
       </key>
-       <key
-            commandId="SQLFormater.commands.showStringContent"
-            contextId="org.eclipse.ui.contexts.window"
-            sequence="M1+9"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
-      </key>     
    </extension>
    <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            id="org.forsp.StringHelper.contribution1"
+            nameFilter="*.*"
+            objectClass="org.eclipse.ui.IEditorInput">
          <menu
-               label="String Utils"
-               mnemonic="M"
-               id="SQLFormater.menus.sampleMenu">
-            <command
-                  commandId="SQLFormater.commands.formateSQLString"
-                  mnemonic="S"
-                  id="SQLFormater.menus.formateSQLString">
-            </command>
+               icon="icons/1442074693_text-width.png"
+               id="org.forsp.StringHelper.menu1"
+               label="String Helper"
+               path="additions">
+            <separator
+                  name="Get string content">
+            </separator>
          </menu>
-          <menu
-               label="String Utils"
-               mnemonic="M"
-               id="SQLFormater.menus.sampleMenu">
-            <command
-                  commandId="SQLFormater.commands.showStringContent"
-                  mnemonic="S"
-                  id="SQLFormater.commands.showStringContent">
-            </command>
-         </menu>        
-      </menuContribution>
-     
-   </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="org.juke.stringutils.StringUtilsPreferencePage"
-            id="StringUtilsPreferencePage"
-            name="String Utils">
-      </page>
+         <action
+               class="org.forsp.stringhelper.popup.actions.NewAction"
+               enablesFor="1"
+               icon="icons/get_text.png"
+               id="org.forsp.StringHelper.newAction"
+               label="Get string content"
+               menubarPath="org.forsp.StringHelper.menu1/group1">
+         </action>
+      </objectContribution>
    </extension>
 
 </plugin>
