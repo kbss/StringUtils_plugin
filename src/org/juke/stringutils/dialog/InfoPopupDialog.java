@@ -46,12 +46,14 @@ public class InfoPopupDialog extends PopupDialog {
     private String informationText;
     private int FONT_SIZE = 11;
     private InfoPopupDialog instance;
-
+    private static final String DIALOG_HEIGHT = "DIALOG_HEIGHT";
     public InfoPopupDialog(Shell parent, int shellStyle, boolean takeFocusOnOpen, boolean persistSize, boolean persistLocation, boolean showDialogMenu,
             boolean showPersistActions, String titleText, String infoText) {
         super(parent, shellStyle, takeFocusOnOpen, persistSize, persistLocation, showDialogMenu, showPersistActions, titleText, "Content of string");
         this.informationText = infoText;
         instance = this;
+
+        
     }
 
     @Override
